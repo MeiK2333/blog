@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -17,6 +18,33 @@ int startup(u_short *);
 size_t get_line(int, char *, size_t);
 void accept_request(int);
 void response_method_not_allowed(int, char *);
+void response_not_found(int);
+
+/**
+ * 返回 404
+ * */
+void response_not_found(int client) {
+    char buf[1024];
+
+    sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, SERVER_STRING);
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "Content-Type: text/html\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<html><title>Not Found</title>\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<body bgcolor=\"white\">\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<center><h1>404 Not Found</h1></center>\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<hr><center>blog/0.1.0</center>\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "</body></html>\r\n");
+    send(client, buf, strlen(buf), 0);
+}
 
 /**
  * 获取请求的类型并根据类型对应处理
@@ -28,6 +56,8 @@ void accept_request(int client_sock) {
     char path[512];
     size_t size;
     size_t i, j;
+    char *status_code;
+    struct stat st;
 
     /* e.g. "GET /index.html HTTP/1.1" */
     size = get_line(client_sock, buf, sizeof(buf));
@@ -48,7 +78,27 @@ void accept_request(int client_sock) {
     }
     url[j] = '\0';
 
-    printf("%s %s\n", method, url);
+    sprintf(path, "blog%s", url);
+    if (path[strlen(path) - 1] == '/') {
+        strcat(path, "index.html");
+    }
+    /* 判断文件是否存在 */
+    if (stat(path, &st) == -1) {
+        /* 如果不存在 */
+        while ((size > 0) && strcmp("\n", buf)) {
+            size = get_line(client_sock, buf, sizeof(buf));
+        }
+        response_not_found(client_sock);
+        status_code = "404 Not Found";
+    } else {
+        /* 如果请求的是一个目录, 则返回其文件列表 */
+        if ((st.st_mode & S_IFMT) == S_IFDIR) {
+        } else {
+        }
+    }
+
+    close(client_sock);
+    printf("%s %s %s\n", method, url, status_code);
 }
 
 /**
@@ -183,6 +233,7 @@ int main(int argc, char *argv[]) {
             exit(0);
         } else {
             printf("PID %d start\n", pid);
+            close(client_sock);
         }
     }
     return 0;
