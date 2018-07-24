@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,52 @@ size_t get_line(int, char *, size_t);
 void accept_request(int);
 void response_method_not_allowed(int, char *);
 void response_not_found(int);
+void response_dir_list(int, char *, char *);
+
+/**
+ * 返回目录
+ * */
+void response_dir_list(int client, char *path, char *url) {
+    DIR *dp;
+    char buf[1024];
+    struct dirent *dirp;
+
+    if ((dp = opendir(path)) == NULL) {
+        err_exit("opendir error");
+    }
+
+    sprintf(buf, "HTTP/1.0 200 OK\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, SERVER_STRING);
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "Content-Type: text/html;charset=utf-8\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<html><title>%s</title>\r\n", url);
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<body bgcolor=\"white\">\r\n");
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<h1>Index of %s</h1><hr><pre>", url);
+    send(client, buf, strlen(buf), 0);
+    sprintf(buf, "<a href=\"../\">../</a>\n");
+    send(client, buf, strlen(buf), 0);
+
+    while ((dirp = readdir(dp)) != NULL) {
+        if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0) {
+            continue;
+        }
+        sprintf(buf, "<a href=\"%s\">%s</a>\n", dirp->d_name, dirp->d_name);
+        send(client, buf, strlen(buf), 0);
+    }
+
+    sprintf(buf, "</pre><hr></body></html>\r\n");
+    send(client, buf, strlen(buf), 0);
+
+    if (closedir(dp) < 0) {
+        err_exit("close dir error");
+    }
+}
 
 /**
  * 返回 404
@@ -30,11 +77,11 @@ void response_not_found(int client) {
     send(client, buf, strlen(buf), 0);
     sprintf(buf, SERVER_STRING);
     send(client, buf, strlen(buf), 0);
-    sprintf(buf, "Content-Type: text/html\r\n");
+    sprintf(buf, "Content-Type: text/html;charset=utf-8\r\n");
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "\r\n");
     send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<html><title>Not Found</title>\r\n");
+    sprintf(buf, "<html><title>404 Not Found</title>\r\n");
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "<body bgcolor=\"white\">\r\n");
     send(client, buf, strlen(buf), 0);
@@ -93,6 +140,11 @@ void accept_request(int client_sock) {
     } else {
         /* 如果请求的是一个目录, 则返回其文件列表 */
         if ((st.st_mode & S_IFMT) == S_IFDIR) {
+            while ((size > 0) && strcmp("\n", buf)) {
+                size = get_line(client_sock, buf, sizeof(buf));
+            }
+            response_dir_list(client_sock, path, url);
+            status_code = "200 OK";
         } else {
         }
     }
@@ -150,7 +202,7 @@ static void sig_cld(int signo) {
     if ((pid = wait(NULL)) < 0) {
         err_exit("wait error");
     }
-    printf("PID %d ended\n", pid);
+    // printf("PID %d ended\n", pid);
 }
 
 /**
@@ -232,7 +284,7 @@ int main(int argc, char *argv[]) {
             accept_request(client_sock);
             exit(0);
         } else {
-            printf("PID %d start\n", pid);
+            // printf("PID %d start\n", pid);
             close(client_sock);
         }
     }
