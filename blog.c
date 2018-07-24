@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +7,79 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#define ISspace(x) isspace((int)(x))
+#define SERVER_STRING "Server: blog/0.1.0\r\n"
+
+void err_exit(const char *);
+static void sig_cld(int);
+int startup(u_short *);
+size_t get_line(int, char *, size_t);
+void accept_request(int);
+void response_method_not_allowed(int, char *);
+
+/**
+ * 获取请求的类型并根据类型对应处理
+ * */
+void accept_request(int client_sock) {
+    char buf[1024];
+    char method[512];
+    char url[512];
+    char path[512];
+    size_t size;
+    size_t i, j;
+
+    /* e.g. "GET /index.html HTTP/1.1" */
+    size = get_line(client_sock, buf, sizeof(buf));
+
+    i = 0;
+    /* 解析 method */
+    for (j = 0; !ISspace(buf[i]) && (j < sizeof(method) - 1); i++, j++) {
+        method[j] = buf[i];
+    }
+    method[j] = '\0';
+
+    /* 解析 URL */
+    while (ISspace(buf[i]) && (i < size)) {
+        i++;
+    }
+    for (j = 0; !ISspace(buf[i]) && (j < sizeof(url) - 1); i++, j++) {
+        url[j] = buf[i];
+    }
+    url[j] = '\0';
+
+    printf("%s %s\n", method, url);
+}
+
+/**
+ * 从网络套接字中读取一行, 返回读取成功的长度
+ * */
+size_t get_line(int sock, char *buf, size_t size) {
+    int i = 0;
+    char c = '\0';
+    int n;
+    while ((i < size - 1) && (c != '\n')) {
+        n = recv(sock, &c, 1, 0);
+        if (n > 0) {
+            if (c == '\r') {
+                /* 查看但不取走 */
+                n = recv(sock, &c, 1, MSG_PEEK);
+                if ((n > 0) && (c == '\n')) {
+                    recv(sock, &c, 1, 0);
+                } else {
+                    c = '\n';
+                }
+            }
+            buf[i] = c;
+            i++;
+        } else {
+            c = '\n';
+        }
+    }
+    buf[i] = '\0';
+
+    return (i);
+}
 
 /**
  * 打印(致命的)错误信息并退出
@@ -76,8 +150,8 @@ int main(int argc, char *argv[]) {
     }
     pid_t pid = -1;
     u_short port = 0;
-    int server_socket = -1;
-    int client_socket = -1;
+    int server_sock = -1;
+    int client_sock = -1;
     struct sockaddr_in client_name;
     socklen_t client_name_len = sizeof(client_name);
 
@@ -89,24 +163,23 @@ int main(int argc, char *argv[]) {
     /**
      * 设置开始监听端口
      * */
-    server_socket = startup(&port);
+    server_sock = startup(&port);
     printf("httpd running on port %d\n", port);
 
     /**
      * 循环监听连接请求并分发到子进程处理
      * */
     while (1) {
-        if ((client_socket =
-                 accept(server_socket, (struct sockaddr *)&client_name,
-                        &client_name_len)) == -1) {
+        if ((client_sock = accept(server_sock, (struct sockaddr *)&client_name,
+                                  &client_name_len)) == -1) {
             err_exit("accept error");
         }
 
         if ((pid = fork()) < 0) {
             err_exit("fork error");
         } else if (pid == 0) {
-            printf("%s\n", inet_ntoa(client_name.sin_addr));
-            
+            printf("%s ", inet_ntoa(client_name.sin_addr));
+            accept_request(client_sock);
             exit(0);
         } else {
             printf("PID %d start\n", pid);
