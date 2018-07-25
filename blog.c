@@ -114,12 +114,23 @@ void response_method_not_allowed(int client, char *method) {
  * */
 void response_dir_list(int client, char *path, char *url) {
     DIR *dp;
-    char buf[1024];
+    char buf[1024], abspath[1024];
     struct dirent *dirp;
+    int i;
 
     if ((dp = opendir(path)) == NULL) {
         err_exit("opendir error");
     }
+
+    strcpy(abspath, url);
+    i = strlen(abspath);
+    while ((i > 0) && (abspath[i] != '/')) {
+        i--;
+    }
+    if (i == 0) {
+        i = 1;
+    }
+    abspath[i] = '\0';
 
     sprintf(buf, "HTTP/1.0 200 OK\r\n");
     send(client, buf, strlen(buf), 0);
@@ -135,7 +146,7 @@ void response_dir_list(int client, char *path, char *url) {
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "<h1>Index of %s</h1><hr><pre>", url);
     send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<a href=\"../\">../</a>\n");
+    sprintf(buf, "<a href=\"%s\">../</a>\n", abspath);
     send(client, buf, strlen(buf), 0);
 
     while ((dirp = readdir(dp)) != NULL) {
