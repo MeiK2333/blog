@@ -70,7 +70,7 @@ void response_file(int client, char *path) {
     strcpy(buf, SERVER_STRING);
     send(client, buf, strlen(buf), 0);
     type = content_type(path, cbuf);
-    sprintf(buf, "Content-type: %s\r\n", cbuf);
+    sprintf(buf, "Content-type: %s;charset=utf-8\r\n", cbuf);
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "\r\n");
     send(client, buf, strlen(buf), 0);
