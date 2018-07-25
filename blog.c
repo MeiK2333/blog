@@ -52,7 +52,7 @@ void cat(int client, char *path) {
         err_exit("fopen error");
     }
 
-    if (fgets(buf, sizeof(buf), resource) != NULL) {
+    while (fgets(buf, sizeof(buf), resource) != NULL) {
         send(client, buf, strlen(buf), 0);
     }
     fclose(resource);
