@@ -22,4 +22,4 @@ enjoy it
 ## TODO
 
 - Accept-Ranges
-- Last-Modified
+- Last-Modified √

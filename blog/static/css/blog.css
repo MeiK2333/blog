@@ -1,0 +1,28 @@
+/**
+* bLue: https://github.com/dreamerblue
+*/
+.blog-container {
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 20px;
+    padding-bottom: 30px;
+  }
+  @media (min-width: 768px) {
+    .blog-container {
+      width: 750px;
+    }
+  }
+  @media (min-width: 992px) {
+    .blog-container {
+      width: 970px;
+    }
+  }
+  @media (min-width: 1200px) {
+    .blog-container {
+      width: 1170px;
+    }
+  }

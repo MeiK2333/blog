@@ -20,12 +20,15 @@ do
 <html>
 <head>
     <title>${filename}</title>
+    <meta content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\" name=\"viewport\"/>
     <link rel=\"stylesheet\" href=\"/static/css/github-light.css\">
     <link rel=\"stylesheet\" href=\"/static/css/github.css\">
-    <script src=\"/static/js/github.js\"></script>
+    <link rel=\"stylesheet\" href=\"/static/css/blog.css\">
+    <script crossorigin=\"anonymous\" type=\"application/javascript\" src=\"/static/js/frameworks.js\"></script>
+    <script crossorigin=\"anonymous\" async=\"async\" type=\"application/javascript\" src=\"/static/js/github.js\"></script>
 </head>
 <body>
-    <div class=\"markdown-body\">
+    <div class=\"markdown-body blog-container\">
 ${value}
     </div>
 </body>
