@@ -1,2 +1,4 @@
 blog/blog
+blog/static/images
+blog/static/media
 *.out

@@ -3,12 +3,21 @@
 #define ASCII 0
 #define BINARY 1
 
-#define check_type(x, y, z, buf)                                  \
-    {                                                             \
-        if (strcmp(x, y) == 0) {                                  \
-            strcpy(buf, z);                                       \
-            return (strncmp(z, "text", 4)) == 0 ? ASCII : BINARY; \
-        }                                                         \
+#define check_type(x, y, z, buf)                                   \
+    {                                                              \
+        if (strcmp(x, y) == 0) {                                   \
+            strcpy(buf, z);                                        \
+            if (strncmp(z, "text", 4) == 0) {                      \
+                return ASCII;                                      \
+            } else if (strcmp(z, "application/javascript") == 0) { \
+                return ASCII;                                      \
+            } else if (strcmp(z, "application/json") == 0) {       \
+                return ASCII;                                      \
+            } else if (strcmp(z, "application/xml") == 0) {        \
+                return ASCII;                                      \
+            }                                                      \
+            return BINARY;                                         \
+        }                                                          \
     }
 
 int content_type(char *path, char *buf) {

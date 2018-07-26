@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "mimetype.c"
@@ -23,12 +24,24 @@ void cat(int, char *);
 void catb(int, char *);
 void err_exit(const char *);
 size_t get_line(int, char *, size_t);
+void get_strftime(const char *, char *, size_t);
 void response_dir_list(int, char *, char *);
 void response_file(int, char *);
 void response_method_not_allowed(int, char *);
 void response_not_found(int);
+void response_not_modified(int);
 static void sig_cld(int);
 int startup(u_short *);
+
+/**
+ * 获取文件最后修改的时间字符串
+ * */
+void get_strftime(const char *path, char *buf, size_t size) {
+    struct stat st;
+    time_t timer;
+    stat(path, &st);
+    strftime(buf, size, "%a, %d %b %Y %T %Z", localtime(&(st.st_mtime)));
+}
 
 /**
  * 传输二进制文件
@@ -59,6 +72,16 @@ void cat(int client, char *path) {
 }
 
 /**
+ * 返回 304 Not Modified
+ * */
+void response_not_modified(int client) {
+    char buf[64];
+
+    strcpy(buf, "HTTP/1.0 304 Not Modified\r\n");
+    send(client, buf, strlen(buf), 0);
+}
+
+/**
  * 返回文件
  * */
 void response_file(int client, char *path) {
@@ -71,6 +94,9 @@ void response_file(int client, char *path) {
     send(client, buf, strlen(buf), 0);
     type = content_type(path, cbuf);
     sprintf(buf, "Content-type: %s;charset=utf-8\r\n", cbuf);
+    send(client, buf, strlen(buf), 0);
+    get_strftime(path, cbuf, sizeof(cbuf));
+    sprintf(buf, "Last-Modified: %s\r\n", cbuf);
     send(client, buf, strlen(buf), 0);
     sprintf(buf, "\r\n");
     send(client, buf, strlen(buf), 0);
@@ -196,7 +222,7 @@ void response_not_found(int client) {
  * 获取请求的类型并根据类型对应处理
  * */
 void accept_request(int client_sock) {
-    char buf[1024];
+    char buf[1024], tbuf1[64], tbuf2[64];
     char method[512];
     char url[512];
     char path[512];
@@ -230,6 +256,9 @@ void accept_request(int client_sock) {
     /* 其他头信息没有用 */
     while ((size > 0) && strcmp("\n", buf)) {
         size = get_line(client_sock, buf, sizeof(buf));
+        if (strncmp(buf, "If-Modified-Since: ", 19) == 0) {
+            strcpy(tbuf1, buf + 19);
+        }
     }
     /* 仅支持 GET 请求 */
     if (strcmp(method, "GET")) {
@@ -254,9 +283,16 @@ void accept_request(int client_sock) {
         if ((st.st_mode & S_IFMT) == S_IFDIR) {
             response_dir_list(client_sock, path, url);
             status_code = "200 OK";
-        } else { /* 如果是一个文件, 则根据直接返回文件内容 */
-            response_file(client_sock, path);
-            status_code = "200 OK";
+        } else { /* 如果是一个文件, 则直接返回文件内容 */
+            /* 判断浏览器缓存是否可用 */
+            get_strftime(path, tbuf2, sizeof(tbuf2));
+            if (strncmp(tbuf1, tbuf2, strlen(tbuf2)) == 0) {
+                response_not_modified(client_sock);
+                status_code = "304 Not Modified";
+            } else {
+                response_file(client_sock, path);
+                status_code = "200 OK";
+            }
         }
     }
 
