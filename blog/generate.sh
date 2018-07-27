@@ -1,6 +1,5 @@
 #!/bin/bash
 cd blog
-rm *.html
 
 # 请求 GitHub API 渲染 markdown
 for file in *.md
@@ -33,4 +32,13 @@ ${value}
     </div>
 </body>
 </html>" > "${filename}".html
+done
+
+# 生成目录
+cd ..
+python3 index_page.py blog
+
+for file in blog/*.md
+do
+    mv "${file}" "${file}".bak
 done
