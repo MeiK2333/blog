@@ -48,10 +48,15 @@ void get_strftime(const char *path, char *buf, size_t size) {
  * */
 void catb(int client, char *path) {
     char buf[1024];
+    struct stat st;
+    stat(path, &st);
+    size_t size = st.st_size;
     FILE *resource = fopen(path, "rb");
     while (fread(buf, 1024, 1, resource) != 0) {
+        size -= 1024;
         send(client, buf, sizeof(buf), 0);
     }
+    send(client, buf, size, 0);
     fclose(resource);
 }
 
@@ -101,7 +106,7 @@ void response_file(int client, char *path) {
     sprintf(buf, "\r\n");
     send(client, buf, strlen(buf), 0);
     if (type == ASCII) {
-        cat(client, path);
+        catb(client, path);
     } else {
         catb(client, path);
     }
