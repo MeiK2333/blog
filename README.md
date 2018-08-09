@@ -10,3 +10,10 @@
 
 - 配置文件解析
 - 单例模式打印日志
+- 为每个 work 进程绑定一个 CPU 核心, 以减少系统调度产生的影响
+
+# 参考
+
+- UNIX 环境高级编程
+- [Nginx](http://nginx.org/)
+- [TinyWeb](https://github.com/GeneralSandman/TinyWeb)

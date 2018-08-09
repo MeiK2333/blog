@@ -7,5 +7,6 @@
 std::string &trim(std::string &str);
 std::string getTime();
 int get_nprocs();
+void set_affnity(pid_t, int);
 
 #endif

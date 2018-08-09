@@ -1,7 +1,7 @@
 link = g++ -o
 gcc11 = g++ -std=c++11 -c
 
-lib = config logger utils request response server master work
+lib = config logger utils request response master work
 lib.o = $(foreach file,$(lib),$(file).o)
 lib.cpp = $(foreach file,$(lib),$(file).cpp)
 

@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "logger.h"
-#include "server.h"
+#include "master.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -17,6 +17,11 @@ int main(int argc, char *argv[]) {
     Logger::configInit(config);
     Logger::info("run server on pid " + std::to_string(getpid()));
 
-    Server *server = new Server(config);
+    /* 开始运行服务进程 */
+    Master *master = new Master(config);
+    master->startup();
+
+    delete config;
+    delete master;
     return 0;
 }

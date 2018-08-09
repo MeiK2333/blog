@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <sched.h>
 #include <unistd.h>
 
 /**
@@ -29,3 +30,13 @@ std::string getTime() {
  * 获取系统可用的 CPU 核数
  * */
 int get_nprocs() { return sysconf(_SC_NPROCESSORS_ONLN); }
+
+/**
+ * 为指定的进程绑定指定的 CPU
+ * */
+void set_affnity(pid_t pid, int cpu) {
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(cpu, &cpuset);
+    sched_setaffinity(pid, sizeof(cpuset), &cpuset);
+}

@@ -78,4 +78,5 @@ void Logger::error(std::string msg) {
     std::string logStr = "[ERROR] " + getTime() + " \"" + msg + "\"";
     Logger *logger = Logger::getInstance();
     logger->log(logStr);
+    exit(1);
 }
