@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#include <unistd.h>
+
 /**
  * 清除字符串两侧空格
  * */
@@ -22,3 +24,8 @@ std::string getTime() {
     strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S", localtime(&timep));
     return std::string(tmp);
 }
+
+/**
+ * 获取系统可用的 CPU 核数
+ * */
+int get_nprocs() { return sysconf(_SC_NPROCESSORS_ONLN); }

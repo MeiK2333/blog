@@ -20,6 +20,7 @@ class Config {
     void show();
 
     int listenPort;
+    int cpuCount;
     std::string rootPath;
     logLevelEnum logLevel;
     std::string logPath;

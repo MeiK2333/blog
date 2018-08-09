@@ -16,6 +16,10 @@ Logger::Logger() {
         exit(1);
     }
     logStream.open(config->logPath, std::ios_base::app);
+    if (!logStream.is_open()) {
+        std::cerr << "open " << config-> logPath << " failure!" << std::endl;
+        exit(1);
+    }
 }
 
 Logger *Logger::getInstance() {

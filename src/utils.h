@@ -6,5 +6,6 @@
 
 std::string &trim(std::string &str);
 std::string getTime();
+int get_nprocs();
 
 #endif

@@ -6,24 +6,7 @@
 
 出于学习的目的, 我准备使用我的 C with STL 的 C++ 技术来重构本项目.
 
-## Usage
+## 特性 (已完成的功能)
 
-```shell
-cp /path/to/you/blog.md blog/blog/
-cd blog
-bash generate.sh
-cd ..
-gcc blog.c -o blog
-./blog [port]
-```
-
-enjoy it
-
-## Rely
-
-- curl
-
-## TODO
-
-- Accept-Ranges
-- Last-Modified √
+- 配置文件解析
+- 单例模式打印日志
