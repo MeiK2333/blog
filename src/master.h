@@ -9,6 +9,9 @@ class Master {
     void startup();
 
    private:
+    int socket_bind();
+
+   private:
     Config *config;
     pid_t *children;
 };
