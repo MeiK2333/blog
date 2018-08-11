@@ -15,10 +15,13 @@ Master::Master(Config *config) {
     this->children = new pid_t[this->config->cpuCount];
 }
 
+Master::~Master() { delete this->children; }
+
 void Master::startup() {
     int listenfd, i;
     /* 开始监听端口 */
     listenfd = this->socket_bind();
+    listen(listenfd, 5);
     Logger::info("server listen port " +
                  std::to_string(this->config->listenPort));
 
@@ -29,10 +32,11 @@ void Master::startup() {
             Logger::error("fork failure!");
         } else if (pid == 0) {
             Logger::debug("run work process " + std::to_string(i) + " on " +
-                         std::to_string(getpid()));
-            Work *work = new Work();
-            work->start();
-            delete work;
+                          std::to_string(getpid()));
+
+            Work work(listenfd);
+            work.start();
+
             exit(1);
         } else {
             this->children[i] = pid;
@@ -42,6 +46,7 @@ void Master::startup() {
                           " to CPU " + std::to_string(i));
         }
     }
+    pause();
     delete this->children;
 }
 

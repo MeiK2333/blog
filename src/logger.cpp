@@ -1,5 +1,6 @@
 #include "logger.h"
 
+#include <unistd.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -17,7 +18,7 @@ Logger::Logger() {
     }
     logStream.open(config->logPath, std::ios_base::app);
     if (!logStream.is_open()) {
-        std::cerr << "open " << config-> logPath << " failure!" << std::endl;
+        std::cerr << "open " << config->logPath << " failure!" << std::endl;
         exit(1);
     }
 }
@@ -75,7 +76,8 @@ void Logger::error(std::string msg) {
     if (config->logLevel > LOG_ERROR) {
         return;
     }
-    std::string logStr = "[ERROR] " + getTime() + " \"" + msg + "\"";
+    std::string logStr = "[ERROR] " + getTime() + " \"" +
+                         std::to_string(getpid()) + " " + msg + "\"";
     Logger *logger = Logger::getInstance();
     logger->log(logStr);
     exit(1);

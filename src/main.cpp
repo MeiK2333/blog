@@ -11,17 +11,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     /* 读取配置文件 */
-    Config *config = new Config(argv[1]);
+    Config config(argv[1]);
 
     /* 设置 Logger */
-    Logger::configInit(config);
+    Logger::configInit(&config);
     Logger::info("run server on pid " + std::to_string(getpid()));
 
     /* 开始运行服务进程 */
-    Master *master = new Master(config);
-    master->startup();
+    Master master(&config);
+    master.startup();
 
-    delete config;
-    delete master;
     return 0;
 }

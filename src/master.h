@@ -6,6 +6,7 @@
 class Master {
    public:
     Master(Config *);
+    ~Master();
     void startup();
 
    private:
