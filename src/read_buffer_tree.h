@@ -22,7 +22,7 @@ struct ReadBufferNode {
     ReadBufferNode(int key) {
         this->key = key;
         this->reader = new ReadBuffer(key);
-        this->left = this->right = nullptr;
+        this->parent = this->left = this->right = nullptr;
         this->color = red;
     }
     ~ReadBufferNode() { delete this->reader; }
@@ -41,6 +41,8 @@ class ReadBufferTree {
     void InsertRebalance(ReadBufferNode *);
     void RemoveRebalance(ReadBufferNode *);
     void Destroy(ReadBufferNode *);
+    void RotateLeft(ReadBufferNode *);
+    void RotateRight(ReadBufferNode *);
 };
 
 #endif
