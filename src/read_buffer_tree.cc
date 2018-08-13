@@ -6,7 +6,8 @@
  * 2. 根结点是黑色的；
  * 3. 如果一个结点是红色的，则它的两个孩子都是黑色的；
  * 4. 对于任意一个结点，其到叶子结点的每条路径上都包含相同数目的黑色结点。
- * 这四条性质可以保证, 到达任何一个叶节点的路径不会比其他任何一个叶节点的路径长一倍
+ * 这四条性质可以保证
+ * 到达任何一个叶节点的路径不会比其他任何一个叶节点的路径长一倍
  * 最长的路径: 黑红相间, 每个黑色节点后都跟着一个红色节点
  * 最短的路径: 全为黑色节点
  * */
@@ -32,13 +33,22 @@ void ReadBufferTree::Insert(int key) {
     current = new ReadBufferNode(key);
     current->parent = parent;
 
-    if (current->key < parent->key) {
-        parent->left = current;
+    /* 判断是否为根节点 */
+    if (parent != nullptr) {
+        if (current->key < parent->key) {
+            parent->left = current;
+        } else {
+            parent->right = current;
+        }
     } else {
-        parent->right = current;
+        this->root_ = current;
     }
 
-    this->InsertRebalance(current);
+    /* 前两层不需要重建 */
+    if (parent != nullptr && parent->parent != nullptr) {
+        this->InsertRebalance(current);
+    }
+    this->root_->color = black;
 }
 
 /**
@@ -80,7 +90,7 @@ void ReadBufferTree::InsertRebalance(ReadBufferNode *node) {
         if (node->parent == node->parent->parent->left) {
             ReadBufferNode *uncle = node->parent->parent->right;  // 叔节点
             if (uncle && uncle->color == red) {
-                /* 
+                /*
                 如果父节点与叔节点都是红的
                 那么直接将父节点与叔节点改为黑色, 祖父节点改为红色
                 此时祖父节点的子节点都满足红黑树的结构
@@ -103,8 +113,9 @@ void ReadBufferTree::InsertRebalance(ReadBufferNode *node) {
                 node->parent->color = black;
                 node->parent->parent->color = red;
                 this->RotateRight(node->parent->parent);
+                break;
             }
-        } else {  /* 镜像同上 */
+        } else { /* 镜像同上 */
             ReadBufferNode *uncle = node->parent->parent->left;
             if (uncle && uncle->color == red) {
                 node->parent->color = black;
@@ -119,13 +130,154 @@ void ReadBufferTree::InsertRebalance(ReadBufferNode *node) {
                 node->parent->color = black;
                 node->parent->parent->color = red;
                 this->RotateLeft(node->parent->parent);
+                break;
             }
         }
     }
-    this->root_->color = black;
 }
 
-void ReadBufferTree::RemoveRebalance(ReadBufferNode *node) {}
+/**
+ * 删除节点后重新平衡
+ * 并非是直接删除, 而是找到一个用于替换的"当前节点"
+ * 替换要删除的节点, 然后重新平衡红黑树
+ * 参考: https://subetter.com/articles/2018/06/rb-tree.html
+ * */
+void ReadBufferTree::RemoveRebalance(ReadBufferNode *node) {
+    ReadBufferNode *x, *y, *x_parent;
+    x = x_parent = nullptr;
+    y = node;
+
+    /* 首先进行节点的删除 */
+    if (y->left == nullptr) {
+        x = y->right;
+    } else if (y->right == nullptr) {
+        x = y->left;
+    } else {
+        /* 如果两个子节点都有, 则寻找右子树的最小值, 用于之后的替换 */
+        y = y->right;
+        while (y->left) {
+            y = y->left;
+        }
+        x = y->right;
+    }
+
+    if (y != node) { /* 如果要删除的节点有两个子节点 */
+        /* 移动 y 以覆盖 node */
+        node->left->parent = y;
+        y->left = node->left;
+
+        if (y != node->right) {
+            x_parent = y->parent;
+            if (x) {
+                x->parent = y->parent;
+            }
+            y->parent->left = nullptr;
+            y->right = node->right;
+            node->right->parent = y;
+        } else {
+            x_parent = y;
+        }
+
+        if (this->root_ == node) {
+            this->root_ = y;
+        } else if (node->parent->left == node) {
+            node->parent->left = y;
+        } else {
+            node->parent->right = y;
+        }
+    } else { /* 如果要删除的节点没有子节点或者只有一个 */
+        x_parent = y->parent;
+        if (x) {
+            x->parent = y->parent;
+        }
+
+        if (this->root_ == node) {
+            this->root_ = x;
+        } else if (node->parent->left == node) {
+            node->parent->left = x;
+        } else {
+            node->parent->right = x;
+        }
+    }
+
+    /* 开始修复红黑树结构, 如果删除的节点为红色节点, 那么对红黑树结构没有影响 */
+    if (y->color == black) {
+        if (x != this->root_ && (x == nullptr || x->color == black)) {
+            if (x == x_parent->left) {
+                ReadBufferNode *w = x_parent->right;
+                /* Case 1*/
+                if (w->color == red) {
+                    w->color = black;
+                    x_parent->color = red;
+                    this->RotateLeft(x_parent);
+                    w = x_parent->right;
+                }
+
+                /* Case 2 */
+                if ((w->left == nullptr || w->left->color == black) &&
+                    (w->right == nullptr || w->right->color == black)) {
+                    w->color = red;
+                    x = x_parent;
+                    x_parent = x_parent->parent;
+                } else {
+                    /* Case 3 */
+                    if (w->right == nullptr || w->right->color == black) {
+                        if (w->left) {
+                            w->left->color = black;
+                        }
+                        w->color = red;
+                        this->RotateRight(w);
+                        w = x_parent->right;
+                    }
+
+                    /* Case 4 */
+                    w->color = x_parent->color;
+                    x_parent->color = black;
+                    if (w->right) {
+                        w->right->color = black;
+                    }
+                    this->RotateLeft(x_parent);
+                }
+            } else { /* 镜像操作 */
+                ReadBufferNode *w = x_parent->left;
+
+                if (w->color == red) {
+                    w->color = black;
+                    x_parent->color = red;
+                    this->RotateRight(x_parent);
+                    w = x_parent->left;
+                }
+
+                if ((w->right == nullptr || w->right->color == black) &&
+                    (w->left == nullptr || w->left->color == black)) {
+                    w->color = red;
+                    x = x_parent;
+                    x_parent = x_parent->parent;
+                } else {
+                    if (w->left == nullptr || w->left->color == black) {
+                        if (w->right) {
+                            w->right->color = black;
+                        }
+                        w->color = red;
+                        this->RotateLeft(w);
+                        w = x_parent->left;
+                    }
+
+                    w->color = x_parent->color;
+                    x_parent->color = black;
+                    if (w->left) {
+                        w->left->color = black;
+                    }
+                    this->RotateRight(x_parent);
+                }
+            }
+        }
+
+        if (x) {
+            x->color = black;
+        }
+    }
+}
 
 /**
  * 左旋
