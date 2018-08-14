@@ -7,13 +7,13 @@ class ReadBuffer {
    public:
     ReadBuffer(int);
     ~ReadBuffer();
-    int readFd();
+    int Read();
+    char *buffer;
 
    private:
     int fd;
     int offset;
     int size;
-    char *buffer;
 
     void resize(int);
 };

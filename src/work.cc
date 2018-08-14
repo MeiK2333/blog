@@ -1,6 +1,7 @@
 #include "work.h"
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <unistd.h>
 #include <functional>
 
@@ -9,6 +10,7 @@
 Work::Work(int listenfd) {
     this->listenfd = listenfd;
     this->event = new Event();
+    this->buffer_tree_ = new ReadBufferTree();
 }
 
 Work::~Work() { delete this->event; }
@@ -31,6 +33,19 @@ void Work::handleRead(int fd) {
     if (fd == this->listenfd) {
         this->handleAccept(fd);
     } else {
+        int len;
+        len = this->buffer_tree_->Find(fd)->reader->Read();
+        if (len == -1) {
+            Logger::WARNING("read failure!");
+            this->event->deleteEvent(fd, EPOLLIN);
+        } else if (len == 0 || len != MAXBUFFER) {
+            this->event->deleteEvent(fd, EPOLLIN);
+            write(fd,
+                  "HTTP/1.0 200 OK\r\nContent-Type: "
+                  "text/html;charset=utf-8\r\n\r\nHello World!\r\n",
+                  70);
+            close(fd);
+        }
     }
 }
 
@@ -44,12 +59,13 @@ void Work::handleAccept(int fd) {
     clientfd = accept(listenfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 
     if (clientfd == -1) {
-        Logger::warning("accept failure!");
+        Logger::WARNING("accept failure!");
         return;
     } else {
-        Logger::debug("accept a new client: " +
-                      std::string(inet_ntoa(clientAddr.sin_addr)) + ":" +
-                      std::to_string(clientAddr.sin_port));
+        Logger::DEBUG("accept a new client: %s:%d",
+                      inet_ntoa(clientAddr.sin_addr), clientAddr.sin_port);
+        /* 添加描述符监听, 插入 buffer_tree 中 */
         this->event->addEvent(clientfd, EPOLLIN);
+        this->buffer_tree_->Insert(clientfd);
     }
 }

@@ -22,17 +22,15 @@ void Master::startup() {
     /* 开始监听端口 */
     listenfd = this->socket_bind();
     listen(listenfd, 5);
-    Logger::info("server listen port " +
-                 std::to_string(this->config->listenPort));
+    Logger::INFO("server listen port %d", this->config->listenPort);
 
     /* 依次启动每个 work 子进程 */
     for (i = 0; i < this->config->cpuCount; i++) {
         pid_t pid;
         if ((pid = fork()) < 0) {
-            Logger::error("fork failure!");
+            Logger::ERROR("fork failure!");
         } else if (pid == 0) {
-            Logger::debug("run work process " + std::to_string(i) + " on " +
-                          std::to_string(getpid()));
+            Logger::DEBUG("run work process %d on %d", i, getpid());
 
             Work work(listenfd);
             work.start();
@@ -42,8 +40,7 @@ void Master::startup() {
             this->children[i] = pid;
             /* 为子进程绑定 CPU */
             set_affnity(pid, i);
-            Logger::debug("set_affnity pid " + std::to_string(pid) +
-                          " to CPU " + std::to_string(i));
+            Logger::DEBUG("set_affnity pid %d to CPU %d", pid, i);
         }
     }
     pause();
@@ -58,7 +55,7 @@ int Master::socket_bind() {
     struct sockaddr_in name;
 
     if ((httpd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-        Logger::error("socket failure!");
+        Logger::ERROR("socket failure!");
     }
 
     bzero(&name, sizeof(name));
@@ -67,7 +64,7 @@ int Master::socket_bind() {
     name.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(httpd, (struct sockaddr *)&name, sizeof(name)) < 0) {
-        Logger::error("bind failure!");
+        Logger::ERROR("bind failure!");
     }
 
     return httpd;

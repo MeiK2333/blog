@@ -17,7 +17,7 @@ ReadBuffer::~ReadBuffer() { free(this->buffer); }
 /**
  * 从描述符中读取数据并存入缓冲区
  * */
-int ReadBuffer::readFd() {
+int ReadBuffer::Read() {
     if (this->offset >= this->size) {
         this->resize(this->size * 2);
     }
@@ -38,6 +38,6 @@ void ReadBuffer::resize(int size) {
         this->buffer = tmp;
         this->size = size;
     } else {
-        Logger::warning("resize failure");
+        Logger::WARNING("resize failure");
     }
 }

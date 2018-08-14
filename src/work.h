@@ -2,6 +2,8 @@
 #define BLOG_WORK_H
 
 #include "event.h"
+#include "read_buffer_tree.h"
+
 class Work {
    public:
     Work(int listenfd);
@@ -18,6 +20,7 @@ class Work {
    private:
     int listenfd;
     Event* event;
+    ReadBufferTree* buffer_tree_;
 };
 
 #endif

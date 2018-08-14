@@ -43,8 +43,7 @@ void Event::handleEvent(epoll_event* events, int len) {
             this->handleError(fd);
         } else {
             this->handleError(fd);
-            Logger::error("Unknown epoll type " +
-                          std::to_string(events[i].events));
+            Logger::ERROR("Unknown epoll type %d", events[i].events);
         }
     }
 }

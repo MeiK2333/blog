@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
     Config config(argv[1]);
 
     /* 设置 Logger */
-    Logger::configInit(&config);
-    Logger::info("run server on pid " + std::to_string(getpid()));
+    Logger::ConfigInit(&config);
+    Logger::INFO("run server on pid %d", getpid());
 
     /* 开始运行服务进程 */
     Master master(&config);

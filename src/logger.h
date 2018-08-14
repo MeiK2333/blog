@@ -1,6 +1,8 @@
 #ifndef BLOG_LOGGER_H
 #define BLOG_LOGGER_H
 
+#include <stdarg.h>
+#include <cstdio>
 #include <fstream>
 #include <string>
 
@@ -9,27 +11,28 @@
 class Logger {
    public:
     /* 打印对应类型的日志 */
-    static void debug(std::string);
-    static void info(std::string);
-    static void notice(std::string);
-    static void warning(std::string);
-    static void error(std::string);
+    static void DEBUG(const char *, ...);
+    static void INFO(const char *, ...);
+    static void NOTICE(const char *, ...);
+    static void WARNING(const char *, ...);
+    static void ERROR(const char *, ...);
     /* 打印一条 LOG */
-    void log(std::string);
+    void Log(const char *, const char *, va_list);
 
    public:
     /* 获取单例模式的实例 */
-    static Logger *getInstance();
+    static Logger *GetInstance();
     /* 初始化配置 */
-    static void configInit(Config *);
+    static void ConfigInit(Config *);
 
    private:
-    static Config *config;
+    static Config *config_;
     std::ofstream logStream;
+    FILE *log_file_;
 
     Logger();
 
-    static Logger *instance;
+    static Logger *instance_;
 };
 
 #endif

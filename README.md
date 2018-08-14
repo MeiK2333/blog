@@ -17,7 +17,6 @@
 
 ## TODO (并非紧急但日后要做的)
 
-- 优化 Log 的方式 (我个人感觉 `char *` + `format` 的方式更可控, 如 `Logger::info("accept a new client %s:%d", address, port)`, 我还没有习惯 C++ 的那一套)
 - 按照 [Google 开源项目风格指南](http://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/) 重新整理一遍结构
 
 # 开发环境
