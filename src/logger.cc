@@ -21,10 +21,12 @@ Logger::Logger() {
     if ((this->log_file_ = fopen(config_->logPath.c_str(), "a")) == NULL) {
         fprintf(stderr, "open %s failure: %s\n", config_->logPath.c_str(),
                 strerror(errno));
+        exit(1);
     }
     /* 修改缓冲类型为行缓冲 */
     if (setvbuf(this->log_file_, NULL, _IOLBF, 0) != 0) {
         fprintf(stderr, "setvbuf error");
+        exit(1);
     }
 }
 

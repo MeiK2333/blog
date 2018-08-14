@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <cstdlib>
+#include <cstring>
 
 #include "logger.h"
 
@@ -27,6 +28,13 @@ int ReadBuffer::Read() {
         offset += len;
     }
     return len;
+}
+
+/**
+ * 判断 read 是否完成
+ * */
+bool ReadBuffer::End() {
+    return strcmp(this->buffer + offset - 4, "\r\n\r\n") == 0;
 }
 
 /**

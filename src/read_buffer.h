@@ -9,6 +9,7 @@ class ReadBuffer {
     ~ReadBuffer();
     int Read();
     char *buffer;
+    bool End();
 
    private:
     int fd;

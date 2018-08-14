@@ -34,11 +34,12 @@ void Work::handleRead(int fd) {
         this->handleAccept(fd);
     } else {
         int len;
-        len = this->buffer_tree_->Find(fd)->reader->Read();
+        ReadBuffer *reader = this->buffer_tree_->Find(fd)->reader;
+        len = reader->Read();
         if (len == -1) {
             Logger::WARNING("read failure!");
             this->event->deleteEvent(fd, EPOLLIN);
-        } else if (len == 0 || len != MAXBUFFER) {
+        } else if (reader->End()) { /* 读取结束的情况 */
             this->event->deleteEvent(fd, EPOLLIN);
             write(fd,
                   "HTTP/1.0 200 OK\r\nContent-Type: "

@@ -1,6 +1,6 @@
 # blog
 
-从零开始构建自己的博客系统
+从零开始构建 WEB 服务器
 
 ## 重构中
 
@@ -19,13 +19,13 @@
 
 - 按照 [Google 开源项目风格指南](http://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/) 重新整理一遍结构
 
-# 开发环境
+## 开发环境
 
 - VSCode + VIM 插件
 - MacOS
 - Docker && Ubuntu
 
-# 参考
+## 参考
 
 - UNIX 环境高级编程
 - [Nginx](http://nginx.org/)
