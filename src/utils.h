@@ -4,7 +4,8 @@
 #include <time.h>
 #include <string>
 
-std::string &trim(std::string &str);
+void cd(std::string);
+std::string &trim(std::string &);
 std::string getTime();
 int get_nprocs();
 void set_affnity(pid_t, int);

@@ -8,4 +8,4 @@
 | event | 创建异步事件监听并触发回调事件 |
 | utils | 一些工具函数 |
 | read_buffer | 自己实现的 buffer |
-| read_buffer_tree | 利用红黑树实现的方便的 buffer 操作(TODO) |
+| read_buffer_tree | 利用红黑树实现的方便的 buffer 操作 |

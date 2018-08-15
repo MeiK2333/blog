@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "produce.h"
 #include "read_buffer.h"
 
 enum {
@@ -13,6 +14,7 @@ enum {
 struct ReadBufferNode {
     int key;
     ReadBuffer *reader;
+    Produce *produce;
 
     int color;
     ReadBufferNode *parent;
@@ -25,7 +27,10 @@ struct ReadBufferNode {
         this->parent = this->left = this->right = nullptr;
         this->color = red;
     }
-    ~ReadBufferNode() { delete this->reader; }
+    ~ReadBufferNode() {
+        delete this->reader;
+        delete this->produce;
+    }
 };
 
 class ReadBufferTree {

@@ -19,6 +19,11 @@
 
 - 按照 [Google 开源项目风格指南](http://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/) 重新整理一遍结构
 
+## 已知却未能解决的问题
+
+- 无法稳定的获得请求数据已经传输完毕的事件
+- 请求传输结束之前对方结束传输, 会导致莫名的异常
+
 ## 开发环境
 
 - VSCode + VIM 插件

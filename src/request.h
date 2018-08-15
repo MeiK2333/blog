@@ -6,11 +6,23 @@
 
 class Request {
    public:
+    Request(char *);
+    ~Request();
+
+    std::string GetMethod();
+    std::string GetUri();
+    std::string GetProtocol();
+    std::string GetBody();
+    std::string GetHeader(std::string);
+
    private:
-    int requestSock;
-    std::string method;
-    std::string uri;
-    std::map<std::string, std::string> headers;
+    std::string method_;
+    std::string uri_;
+    std::string protocol_;
+    std::string body_;
+    std::map<std::string, std::string> headers_;
+
+    std::string SplitLine(std::string &);
 };
 
 #endif

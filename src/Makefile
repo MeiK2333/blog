@@ -1,7 +1,7 @@
 link = g++ -o
-gcc11 = g++ -std=c++11 -c
+gcc11 = g++ -std=c++11 -c -O2
 
-lib = config logger utils request response master work event read_buffer read_buffer_tree
+lib = config logger utils request response master work event read_buffer read_buffer_tree produce
 lib.o = $(foreach file,$(lib),$(file).o)
 lib.cc = $(foreach file,$(lib),$(file).cc)
 

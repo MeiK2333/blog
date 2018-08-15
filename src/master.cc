@@ -32,6 +32,8 @@ void Master::startup() {
         } else if (pid == 0) {
             Logger::DEBUG("run work process %d on %d", i, getpid());
 
+            cd(this->config->rootPath);
+
             Work work(listenfd);
             work.start();
 

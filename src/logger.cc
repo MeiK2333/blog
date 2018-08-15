@@ -47,6 +47,9 @@ void Logger::Log(const char *LOG_LEVEL, const char *format, va_list arg) {
 }
 
 void Logger::DEBUG(const char *format, ...) {
+    if (config_->logLevel > LOG_DEBUG) {
+        return;
+    }
     va_list ap;
     va_start(ap, format);
     Logger::GetInstance()->Log("DEBUG", format, ap);
@@ -54,6 +57,9 @@ void Logger::DEBUG(const char *format, ...) {
 }
 
 void Logger::INFO(const char *format, ...) {
+    if (config_->logLevel > LOG_INFO) {
+        return;
+    }
     va_list ap;
     va_start(ap, format);
     Logger::GetInstance()->Log("INFO", format, ap);
@@ -61,6 +67,9 @@ void Logger::INFO(const char *format, ...) {
 }
 
 void Logger::NOTICE(const char *format, ...) {
+    if (config_->logLevel > LOG_NOTICE) {
+        return;
+    }
     va_list ap;
     va_start(ap, format);
     Logger::GetInstance()->Log("NOTICE", format, ap);
@@ -68,6 +77,9 @@ void Logger::NOTICE(const char *format, ...) {
 }
 
 void Logger::WARNING(const char *format, ...) {
+    if (config_->logLevel > LOG_WARNING) {
+        return;
+    }
     va_list ap;
     va_start(ap, format);
     Logger::GetInstance()->Log("WARNING", format, ap);
@@ -75,6 +87,9 @@ void Logger::WARNING(const char *format, ...) {
 }
 
 void Logger::ERROR(const char *format, ...) {
+    if (config_->logLevel > LOG_ERROR) {
+        return;
+    }
     va_list ap;
     va_start(ap, format);
     Logger::GetInstance()->Log("ERROR", format, ap);

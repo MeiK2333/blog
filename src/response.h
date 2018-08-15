@@ -6,10 +6,11 @@
 
 class Response {
    public:
+    Response();
+
    private:
-    int responseSock;
-    std::string httpStatus;
-    std::map<std::string, std::string> headers;
+    std::string httpStatus_;
+    std::map<std::string, std::string> headers_;
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "logger.h"
+#include "produce.h"
 
 Work::Work(int listenfd) {
     this->listenfd = listenfd;
@@ -18,9 +19,16 @@ Work::~Work() { delete this->event; }
 void Work::start() {
     this->event->addEvent(this->listenfd, EPOLLIN);
 
-    std::function<void(int)> func;
-    func = std::bind(&Work::handleRead, this, std::placeholders::_1);
-    this->event->setHandleReadFunc(func);
+    /* 绑定函数与 epoll 事件 */
+    std::function<void(int)> func1, func2, func3, func4;
+    func1 = std::bind(&Work::handleRead, this, std::placeholders::_1);
+    this->event->setHandleReadFunc(func1);
+    func2 = std::bind(&Work::handleWrite, this, std::placeholders::_1);
+    this->event->setHandleWriteFunc(func2);
+    func3 = std::bind(&Work::handleClose, this, std::placeholders::_1);
+    this->event->setHandleCloseFunc(func3);
+    func4 = std::bind(&Work::handleError, this, std::placeholders::_1);
+    this->event->setHandleErrorFunc(func4);
 
     this->event->loop();
 }
@@ -34,20 +42,45 @@ void Work::handleRead(int fd) {
         this->handleAccept(fd);
     } else {
         int len;
-        ReadBuffer *reader = this->buffer_tree_->Find(fd)->reader;
+        ReadBufferNode *node = this->buffer_tree_->Find(fd);
+        ReadBuffer *reader = node->reader;
         len = reader->Read();
         if (len == -1) {
             Logger::WARNING("read failure!");
             this->event->deleteEvent(fd, EPOLLIN);
-        } else if (reader->End()) { /* 读取结束的情况 */
-            this->event->deleteEvent(fd, EPOLLIN);
+        } else if (reader->End() || len != MAXBUFFER) { /* 读取结束的情况 */
+            node->produce = new Produce(reader->buffer);
+            // this->event->modifyEvent(fd, EPOLLOUT);
             write(fd,
-                  "HTTP/1.0 200 OK\r\nContent-Type: "
+                  "HTTP/1.1 200 OK\r\nContent-Type: "
                   "text/html;charset=utf-8\r\n\r\nHello World!\r\n",
                   70);
             close(fd);
         }
     }
+}
+
+/**
+ * 描述符可写的事件
+ * */
+void Work::handleWrite(int fd) {}
+
+/**
+ * 描述符关闭的事件
+ * */
+void Work::handleClose(int fd) {
+    close(fd);
+    this->event->deleteEvent(fd, EPOLLIN);
+    this->event->deleteEvent(fd, EPOLLOUT);
+}
+
+/**
+ * Error 事件
+ * */
+void Work::handleError(int fd) {
+    close(fd);
+    this->event->deleteEvent(fd, EPOLLIN);
+    this->event->deleteEvent(fd, EPOLLOUT);
 }
 
 /**

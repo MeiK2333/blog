@@ -4,6 +4,19 @@
 #include <unistd.h>
 
 /**
+ * 修改活动目录
+ * */
+void cd(std::string path) {
+    if (chdir(path.c_str()) == -1) {
+        fprintf(stderr, "chdir failure\n");
+        exit(1);
+    }
+    if (chroot(path.c_str()) == -1) {
+        fprintf(stderr, "chroot failure\n");
+    }
+}
+
+/**
  * 清除字符串两侧空格
  * */
 std::string &trim(std::string &str) {
