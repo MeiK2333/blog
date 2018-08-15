@@ -9,8 +9,8 @@
 ReadBuffer::ReadBuffer(int fd) {
     this->fd = fd;
     this->offset = 0;
-    this->buffer = (char *)malloc(MAXBUFFER * sizeof(char *));
-    this->size = MAXBUFFER;
+    this->buffer = (char *)malloc(BUFSIZ * sizeof(char *));
+    this->size = BUFSIZ;
 }
 
 ReadBuffer::~ReadBuffer() { free(this->buffer); }
@@ -23,7 +23,7 @@ int ReadBuffer::Read() {
         this->resize(this->size * 2);
     }
     int len;
-    len = read(this->fd, this->buffer + offset, MAXBUFFER);
+    len = read(this->fd, this->buffer + offset, BUFSIZ);
     if (len > 0) {
         offset += len;
     }

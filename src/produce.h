@@ -8,7 +8,8 @@ class Produce {
    public:
     Produce(char *);
     ~Produce();
-    Response *Make();
+    void Make();
+    Response *GetResponse();
 
    private:
     Request *request_;

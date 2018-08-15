@@ -48,14 +48,16 @@ void Work::handleRead(int fd) {
         if (len == -1) {
             Logger::WARNING("read failure!");
             this->event->deleteEvent(fd, EPOLLIN);
-        } else if (reader->End() || len != MAXBUFFER) { /* 读取结束的情况 */
+        } else if (reader->End() || len != BUFSIZ) { /* 读取结束的情况 */
             node->produce = new Produce(reader->buffer);
-            // this->event->modifyEvent(fd, EPOLLOUT);
+            node->produce->Make();
+            //this->event->modifyEvent(fd, EPOLLOUT);
             write(fd,
                   "HTTP/1.1 200 OK\r\nContent-Type: "
                   "text/html;charset=utf-8\r\n\r\nHello World!\r\n",
                   70);
             close(fd);
+            this->buffer_tree_->Remove(fd);
         }
     }
 }
@@ -63,7 +65,9 @@ void Work::handleRead(int fd) {
 /**
  * 描述符可写的事件
  * */
-void Work::handleWrite(int fd) {}
+void Work::handleWrite(int fd) {
+
+}
 
 /**
  * 描述符关闭的事件

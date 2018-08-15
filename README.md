@@ -18,6 +18,7 @@
 ## TODO (并非紧急但日后要做的)
 
 - 按照 [Google 开源项目风格指南](http://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/) 重新整理一遍结构
+- 现在按值传递 config 的方式导致 epoll 之后的函数无法获得这些配置, 可以考虑将 config 也修改为单例模式
 
 ## 已知却未能解决的问题
 
