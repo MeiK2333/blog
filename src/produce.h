@@ -9,6 +9,7 @@ class Produce {
     Produce(char *);
     ~Produce();
     void Make();
+    Request *GetRequest();
     Response *GetResponse();
 
    private:

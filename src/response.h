@@ -9,7 +9,12 @@ class Response {
     Response();
     ~Response();
     void SetStatusCode(int);
+    int GetStatusCode();
     void SetHeader(std::string, std::string);
+    std::string GetHeader(std::string);
+    char header_buf[BUFSIZ];
+    size_t header_len;
+    void MakeHeader();
     char *buf;
     size_t offset;
     size_t len;

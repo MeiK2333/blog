@@ -49,15 +49,11 @@ void Work::handleRead(int fd) {
             Logger::WARNING("read failure!");
             this->event->deleteEvent(fd, EPOLLIN);
         } else if (reader->End() || len != BUFSIZ) { /* 读取结束的情况 */
+            /* 根据请求产生返回 */
             node->produce = new Produce(reader->buffer);
             node->produce->Make();
-            //this->event->modifyEvent(fd, EPOLLOUT);
-            write(fd,
-                  "HTTP/1.1 200 OK\r\nContent-Type: "
-                  "text/html;charset=utf-8\r\n\r\nHello World!\r\n",
-                  70);
-            close(fd);
-            this->buffer_tree_->Remove(fd);
+            node->produce->GetResponse()->MakeHeader();
+            this->event->modifyEvent(fd, EPOLLOUT);
         }
     }
 }
@@ -66,7 +62,25 @@ void Work::handleRead(int fd) {
  * 描述符可写的事件
  * */
 void Work::handleWrite(int fd) {
-
+    this->event->deleteEvent(fd, EPOLLOUT);
+    ReadBufferNode *node = this->buffer_tree_->Find(fd);
+    Response *response = node->produce->GetResponse();
+    int n;
+    if ((n = write(fd, response->header_buf, response->header_len)) < 0) {
+        Logger::WARNING("write failure!");
+        close(fd);
+        this->buffer_tree_->Remove(fd);
+        return;
+    }
+    if ((n = write(fd, response->buf + response->offset,
+                   response->len - response->offset)) < 0) {
+        Logger::WARNING("write failure!");
+        close(fd);
+        this->buffer_tree_->Remove(fd);
+        return;
+    }
+    close(fd);
+    this->buffer_tree_->Remove(fd);
 }
 
 /**

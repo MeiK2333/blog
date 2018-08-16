@@ -1,7 +1,4 @@
 blog/blog
-blog/static/images
-blog/static/media
-blog
 *.out
 .vscode
 *.log

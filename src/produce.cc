@@ -84,8 +84,9 @@ void Produce::Make() {
         }
 
         /* mmap 映射文件 */
-        if ((response_->buf = (char *)mmap(0, response_->len, PROT_READ, MAP_PRIVATE,
-                                           file_fd, 0)) == MAP_FAILED) {
+        if ((response_->buf = (char *)mmap(0, response_->len, PROT_READ,
+                                           MAP_PRIVATE, file_fd, 0)) ==
+            MAP_FAILED) {
             Logger::WARNING("mmap failure");
             response_->SetStatusCode(500);
         }
@@ -95,4 +96,5 @@ void Produce::Make() {
     }
 }
 
+Request *Produce::GetRequest() { return request_; }
 Response *Produce::GetResponse() { return response_; }
