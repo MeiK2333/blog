@@ -5,6 +5,14 @@
 Response::Response() {
     /* 如果这个 status code 没有被改变, 说明服务器内部发生了错误 */
     status_code_ = 500;
+    this->buf = NULL;
+    this->offset = this->len = 0;
+}
+
+Response::~Response() {
+    if (this->buf != NULL) {
+        free(this->buf);
+    }
 }
 
 /**

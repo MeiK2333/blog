@@ -7,6 +7,7 @@
 class Response {
    public:
     Response();
+    ~Response();
     void SetStatusCode(int);
     void SetHeader(std::string, std::string);
     char *buf;
