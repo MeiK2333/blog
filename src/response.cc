@@ -1,5 +1,6 @@
 #include "response.h"
 
+#include <sys/mman.h>
 #include <cstring>
 
 #include "logger.h"
@@ -12,10 +13,10 @@ Response::Response() {
 }
 
 Response::~Response() {
-    /* mmap 的内存会自动释放掉 */
-    // if (this->buf != NULL) {
-    //     free(this->buf);
-    // }
+    if (this->buf != NULL) {
+        munmap(this->buf, this->len);
+        // free(this->buf);
+    }
 }
 
 /**
